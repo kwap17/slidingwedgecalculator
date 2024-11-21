@@ -19,3 +19,30 @@ function calculateFS() {
   // Display the result
   document.getElementById("result").innerText = `Result: FS = ${FS.toFixed(2)}`;
 }
+function generatePDF() {
+  // Get the calculation inputs and result
+  const cohesion = document.getElementById("cohesion").value;
+  const area = document.getElementById("area").value;
+  const weight = document.getElementById("weight").value;
+  const frictionAngle = document.getElementById("frictionAngle").value;
+  const slopeAngle = document.getElementById("slopeAngle").value;
+  const result = document.getElementById("result").innerText;
+
+  // Create a new PDF document
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Add content to the PDF
+  doc.setFontSize(16);
+  doc.text("Sliding Wedge Calculator Report", 10, 10);
+  doc.setFontSize(12);
+  doc.text(`Cohesion (c): ${cohesion} kPa`, 10, 30);
+  doc.text(`Area (A): ${area} m²`, 10, 40);
+  doc.text(`Weight (W): ${weight} kN`, 10, 50);
+  doc.text(`Friction Angle (φ): ${frictionAngle}°`, 10, 60);
+  doc.text(`Slope Angle (θ): ${slopeAngle}°`, 10, 70);
+  doc.text(result, 10, 90);
+
+  // Save the PDF
+  doc.save("sliding_wedge_report.pdf");
+}
