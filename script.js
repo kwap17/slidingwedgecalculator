@@ -20,13 +20,41 @@ function calculateFS() {
   document.getElementById("result").innerText = `Result: FS = ${FS.toFixed(2)}`;
 }
 function generatePDF() {
-  // Get the calculation inputs and result
-  const cohesion = document.getElementById("cohesion").value;
-  const area = document.getElementById("area").value;
-  const weight = document.getElementById("weight").value;
-  const frictionAngle = document.getElementById("frictionAngle").value;
-  const slopeAngle = document.getElementById("slopeAngle").value;
+  // Get user inputs
+  const cohesion = parseFloat(document.getElementById("cohesion").value);
+  const area = parseFloat(document.getElementById("area").value);
+  const weight = parseFloat(document.getElementById("weight").value);
+  const frictionAngle = parseFloat(document.getElementById("frictionAngle").value);
+  const slopeAngle = parseFloat(document.getElementById("slopeAngle").value);
   const result = document.getElementById("result").innerText;
+
+  // Convert angles to radians
+  const phiRadians = (frictionAngle * Math.PI) / 180;
+  const thetaRadians = (slopeAngle * Math.PI) / 180;
+
+  // Calculate intermediate values
+  const resistingForce = cohesion * area + weight * Math.cos(thetaRadians) * Math.tan(phiRadians);
+  const drivingForce = weight * Math.sin(thetaRadians);
+  const FS = resistingForce / drivingForce;
+
+  // Create the calculation steps
+  const steps = [
+    `1. Convert angles to radians:`,
+    `   - Friction Angle (φ): ${frictionAngle}° = ${phiRadians.toFixed(3)} radians`,
+    `   - Slope Angle (θ): ${slopeAngle}° = ${thetaRadians.toFixed(3)} radians`,
+    `2. Calculate resisting force:`,
+    `   - Resisting Force = c × A + W × cos(θ) × tan(φ)`,
+    `   - Resisting Force = ${cohesion} × ${area} + ${weight} × cos(${thetaRadians.toFixed(3)}) × tan(${phiRadians.toFixed(3)})`,
+    `   - Resisting Force = ${resistingForce.toFixed(2)} kN`,
+    `3. Calculate driving force:`,
+    `   - Driving Force = W × sin(θ)`,
+    `   - Driving Force = ${weight} × sin(${thetaRadians.toFixed(3)})`,
+    `   - Driving Force = ${drivingForce.toFixed(2)} kN`,
+    `4. Calculate Factor of Safety (FS):`,
+    `   - FS = Resisting Force / Driving Force`,
+    `   - FS = ${resistingForce.toFixed(2)} / ${drivingForce.toFixed(2)}`,
+    `   - FS = ${FS.toFixed(2)}`
+  ];
 
   // Create a new PDF document
   const { jsPDF } = window.jspdf;
@@ -41,7 +69,18 @@ function generatePDF() {
   doc.text(`Weight (W): ${weight} kN`, 10, 50);
   doc.text(`Friction Angle (φ): ${frictionAngle}°`, 10, 60);
   doc.text(`Slope Angle (θ): ${slopeAngle}°`, 10, 70);
-  doc.text(result, 10, 90);
+  doc.text(result, 10, 80);
+
+  // Add calculation steps
+  let y = 90;
+  steps.forEach((step, index) => {
+    doc.text(step, 10, y);
+    y += 10; // Move to the next line
+    if (y > 270) { // Handle page overflow
+      doc.addPage();
+      y = 10;
+    }
+  });
 
   // Save the PDF
   doc.save("sliding_wedge_report.pdf");
